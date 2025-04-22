@@ -20,7 +20,7 @@ try {
     # Dosya var mı?
     if (Test-Path $localPath) {
         Log-Message "Dosya bulundu, çalıştırılıyor..."
-        Start-Process $localPath -WindowStyle Normal
+        Start-Process -FilePath $localPath -WindowStyle Normal
     } else {
         Log-Message "HATA: Dosya bulunamadı!"
         Write-Host "Dosya indirilemedi ya da doğru yere inmemiş olabilir."
