@@ -1,0 +1,1 @@
+kod buraya(bomba)
